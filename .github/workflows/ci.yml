@@ -42,7 +42,6 @@ jobs:
     steps:
       - name: Checkout the files
         uses: actions/checkout@v3
-        
       - name: Deploy to Server
         # this actions uses the rsync command to copy files from the runner to the ec2 server
         uses: easingthemes/ssh-deploy@main
