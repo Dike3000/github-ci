@@ -33,7 +33,7 @@ jobs:
           bootstrap: vendor/autoload.php
           configuration: test/phpunit.xml
           args: --coverage-text
-         # this job will deploy our code to our EC2 instance
+ # this job will deploy our code to our EC2 instance
   deploy:
     name: Deploy to EC2 on master branch push
     runs-on: ubuntu-latest
@@ -42,6 +42,7 @@ jobs:
     steps:
       - name: Checkout the files
         uses: actions/checkout@v3
+        
       - name: Deploy to Server
         # this actions uses the rsync command to copy files from the runner to the ec2 server
         uses: easingthemes/ssh-deploy@main
@@ -66,4 +67,4 @@ jobs:
           key: ${{secrets.EC2_SSH_KEY}}
           script: |
             cd ${{secrets.TARGET}}
-            composer install 
+            composer install         
