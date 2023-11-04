@@ -68,3 +68,4 @@ jobs:
           script: |
             cd ${{secrets.TARGET}}
             composer install
+           # this job will deploy our code to our EC2 instance
