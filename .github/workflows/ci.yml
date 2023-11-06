@@ -18,7 +18,7 @@ jobs:
       - name: Install Composer Dependencies
         uses: php-actions/composer@v2
         with:
-          php-version: 7.4  # Adjust as needed
+          php-version: 9.6 
 
       - name: Run PHPUnit Tests
         run: composer exec phpunit
