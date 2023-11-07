@@ -34,32 +34,56 @@ jobs:
           configuration: test/phpunit.xml
           args: --coverage-text
 # this job will deploy our code to our EC2 instance
-  deploy:
-    name: Deploy to EC2 on master branch push
+jobs:
+  build-test:
+    name: Run Unit Tests
     runs-on: ubuntu-latest
-    needs: build-test  # This ensures the "deploy" job depends on "build-test" job
-    if: success()     # This ensures "deploy" job runs only if "build-test" is successful
     steps:
-      - name: Checkout the files
-        uses: actions/checkout@v3
-        
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      
+      - name: Install Composer Dependencies
+        uses: php-actions/composer@v2
+        with:
+          php-version: 7.4  # Adjust as needed
+
+      - name: Run PHPUnit Tests
+        run: composer exec phpunit
+
+  deploy:
+    name: Deploy to EC2 on main branch push
+    runs-on: ubuntu-latest
+    needs: build-test
+    if: success()
+    steps:
+      - name: Ensure Destination Directory Exists
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{secrets.REMOTE_HOST}}
+          username: ${{secrets.REMOTE_USER}}
+          key: ${{secrets.EC2_SSH_KEY}}
+          script: |
+            mkdir -p ${{secrets.TARGET}}
+
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
       - name: Deploy to Server
-        # this actions uses the rsync command to copy files from the runner to the ec2 server
         uses: easingthemes/ssh-deploy@main
-        # the runner needs to connect to our EC2 server so its needs to know the host, username, and key file so it can connect. It is using the values we defined as secrets in the previous step
-        env: 
-          SSH_PRIVATE_KEY: ${{secrets.EC2_SSH_KEY}}
-          REMOTE_HOST: ${{secrets.REMOTE_HOST}}
-          REMOTE_USER: ${{secrets.REMOTE_USER}}
-          TARGET: ${{secrets.TARGET}}
-  # this job will run composer install on our EC2 instance
+        with:
+          ssh-private-key: ${{secrets.EC2_SSH_KEY}}
+          server-host: ${{secrets.REMOTE_HOST}}
+          server-user: ${{secrets.REMOTE_USER}}
+          local-folder: ./
+          remote-folder: ${{secrets.TARGET}}
+
   composer:
-    name: Run composer install on EC2 instance
+    name: Run Composer Install on EC2 instance
     runs-on: ubuntu-latest
     needs: deploy
     if: success()
     steps:
-      - name: execute composer install
+      - name: Execute Composer Install
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{secrets.REMOTE_HOST}}
@@ -67,4 +91,4 @@ jobs:
           key: ${{secrets.EC2_SSH_KEY}}
           script: |
             cd ${{secrets.TARGET}}
-            composer install
+            composer install 
