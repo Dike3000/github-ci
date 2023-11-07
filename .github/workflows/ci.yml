@@ -33,22 +33,6 @@ jobs:
           bootstrap: vendor/autoload.php
           configuration: test/phpunit.xml
           args: --coverage-text
-# this job will deploy our code to our EC2 instance
-jobs:
-  build-test:
-    name: Run Unit Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-      
-      - name: Install Composer Dependencies
-        uses: php-actions/composer@v2
-        with:
-          php-version: 7.4  # Adjust as needed
-
-      - name: Run PHPUnit Tests
-        run: composer exec phpunit
 
   deploy:
     name: Deploy to EC2 on main branch push
